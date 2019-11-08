@@ -1,0 +1,13 @@
+{application,longfi,
+ [{description,"An OTP library"},
+  {vsn,"git"},
+  {registered,[]},
+  {applications,[kernel,stdlib]},
+  {env,[]},
+
+  %% hex.pm packaging:
+  {licenses, ["Apache 2.0"]},
+  {maintainers, ["Helium"]},
+  {links, [{"Github", "https://github.com/helium/erlang-longfi"}]},
+  {exclude_files, ["c_src/longfi-core/*"]}
+ ]}.
