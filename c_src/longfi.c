@@ -64,7 +64,7 @@ erl_lfc_fingerprint_monolithic(ErlNifEnv * env, int argc, const ERL_NIF_TERM arg
     }
 
     if (lfc_fingerprint_monolithic(key.data, key.size, hdr, oui, did, seq, payload.data, payload.size, &fp) == lfc_res_ok) {
-        return enif_make_int(env, fp);
+        return enif_make_uint(env, fp);
     }
     return enif_make_badarg(env);
 }
