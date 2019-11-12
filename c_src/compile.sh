@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 
 
 if [ ! -d c_src/longfi-core ]; then
@@ -11,15 +11,11 @@ cd c_src/longfi-core
 
 CURRENT_VERSION=`git describe --tags`
 
-#if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
-    #git clean -ddxxff
-    #git fetch
-    #git checkout $VERSION
-#fi
-
-git fetch
-git checkout jsk/api/add-fp-verification
-git pull origin jsk/api/add-fp-verification
+if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
+    git clean -ddxxff
+    git fetch
+    git checkout $VERSION
+fi
 
 if [ ! -d build ]; then
     cmake -H. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
