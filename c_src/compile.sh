@@ -17,7 +17,6 @@ if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
     git checkout $VERSION
 fi
 
-if [ ! -d build ]; then
-    cmake -H. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
-fi
-make -C build -j
+cmake -H. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install
+cmake --build . -j
+cmake --install .

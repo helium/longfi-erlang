@@ -15,8 +15,8 @@
  */
 
 #include "erl_nif.h"
-#include "lfc.h"
-#include "fingerprint.h"
+#include "lfc/lfc.h"
+#include "lfc/fingerprint.h"
 #include <stdbool.h>
 #include <string.h>
 
