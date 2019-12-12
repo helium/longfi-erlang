@@ -1,6 +1,7 @@
 -module(longfi).
 
 -export([get_fingerprint/2]).
+-export([serialize/5]).
 
 -on_load(init/0).
 
@@ -14,6 +15,13 @@ get_fingerprint(#helium_LongFiRxPacket_pb{tag_bits=Header, oui=OUI, device_id=DI
     fingerprint_monolithic(Key, Header, OUI, DID, Sequence, Payload).
 
 fingerprint_monolithic(_Key, _Header, _OUI, _DID, _Sequence, _Payload) ->
+    not_loaded(?LINE).
+
+-spec serialize(non_neg_integer(), non_neg_integer(), non_neg_integer(), non_neg_integer(), binary()) ->binary().
+serialize(OUI, DID, Sequence, Fingerprint, Payload) ->
+    serialize_monolithic(OUI, DID, Sequence, Fingerprint, Payload).
+
+serialize_monolithic(_OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
     not_loaded(?LINE).
 
 init() ->
