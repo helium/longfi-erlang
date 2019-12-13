@@ -2,6 +2,7 @@
 
 -export([get_fingerprint/2]).
 -export([serialize/5]).
+-export([deserialize/1]).
 
 -on_load(init/0).
 
@@ -22,6 +23,9 @@ serialize(OUI, DID, Sequence, Fingerprint, Payload) ->
     serialize_monolithic(OUI, DID, Sequence, Fingerprint, Payload).
 
 serialize_monolithic(_OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
+    not_loaded(?LINE).
+
+deserialize(Bin) ->
     not_loaded(?LINE).
 
 init() ->

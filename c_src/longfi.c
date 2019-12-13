@@ -18,12 +18,95 @@
 #include "erl_nif.h"
 #include "lfc/fingerprint.h"
 #include "lfc/lfc.h"
+#include "lfc/priv/lfc_dg_des.h"
 #include "lfc/priv/lfc_dg_ser.h"
 #include <stdbool.h>
 #include <string.h>
 
+
+static ERL_NIF_TERM ATOM_OK;
+static ERL_NIF_TERM ATOM_ERROR;
 static ERL_NIF_TERM ATOM_TRUE;
 static ERL_NIF_TERM ATOM_FALSE;
+static ERL_NIF_TERM ATOM_ACK;
+static ERL_NIF_TERM ATOM_FRAME_DATA;
+static ERL_NIF_TERM ATOM_FRAME_START;
+static ERL_NIF_TERM ATOM_MONOLITHIC;
+
+
+static ERL_NIF_TERM
+erl_lfc_dg_monolithic_to_term(ErlNifEnv *                      env,
+                              struct lfc_dg_monolithic const * dg) {
+    ERL_NIF_TERM flags =
+        enif_make_tuple5(env,
+                         dg->flags.downlink ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.should_ack ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.cts_rts ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.priority ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.ldpc ? ATOM_TRUE : ATOM_FALSE);
+    ERL_NIF_TERM oui = enif_make_int(env, dg->oui);
+    ERL_NIF_TERM did = enif_make_int(env, dg->did);
+    ERL_NIF_TERM seq = enif_make_int(env, dg->seq);
+    ERL_NIF_TERM fp  = enif_make_int(env, dg->fp);
+    ERL_NIF_TERM payload;
+    void *       p = enif_make_new_binary(env, dg->pay_len, &payload);
+    memcpy(p, dg->pay, dg->pay_len);
+    return enif_make_tuple7(env, ATOM_MONOLITHIC, flags, oui, did, seq, fp, payload);
+}
+
+static ERL_NIF_TERM
+erl_lfc_dg_ack_to_term(ErlNifEnv * env, struct lfc_dg_ack const * dg) {
+    ERL_NIF_TERM flags =
+        enif_make_tuple5(env,
+                         dg->flags.failure ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.session_expired ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.cts_rts ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.retransmit ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.ldpc ? ATOM_TRUE : ATOM_FALSE);
+    ERL_NIF_TERM oui = enif_make_int(env, dg->oui);
+    ERL_NIF_TERM did = enif_make_int(env, dg->did);
+    ERL_NIF_TERM fp  = enif_make_int(env, dg->fp);
+    ERL_NIF_TERM seq = enif_make_int(env, dg->seq);
+    ERL_NIF_TERM payload;
+    void *       p = enif_make_new_binary(env, dg->pay_len, &payload);
+    memcpy(p, dg->pay, dg->pay_len);
+    return enif_make_tuple7(env, ATOM_MONOLITHIC, flags, oui, did, seq, fp, payload);
+}
+
+static ERL_NIF_TERM
+erl_lfc_dg_frame_start_to_term(ErlNifEnv *                       env,
+                               struct lfc_dg_frame_start const * dg) {
+    ERL_NIF_TERM flags =
+        enif_make_tuple5(env,
+                         dg->flags.downlink ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.should_ack ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.cts_rts ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.priority ? ATOM_TRUE : ATOM_FALSE,
+                         dg->flags.ldpc ? ATOM_TRUE : ATOM_FALSE);
+    ERL_NIF_TERM oui = enif_make_int(env, dg->oui);
+    ERL_NIF_TERM did = enif_make_int(env, dg->did);
+    ERL_NIF_TERM seq = enif_make_int(env, dg->seq);
+    ERL_NIF_TERM fp  = enif_make_int(env, dg->fp);
+    ERL_NIF_TERM payload;
+    void *       p = enif_make_new_binary(env, dg->pay_len, &payload);
+    memcpy(p, dg->pay, dg->pay_len);
+    return enif_make_tuple7(env, ATOM_FRAME_START, flags, oui, did, seq, fp, payload);
+}
+
+static ERL_NIF_TERM
+erl_lfc_dg_frame_data_to_term(ErlNifEnv *                      env,
+                              struct lfc_dg_frame_data const * dg) {
+    ERL_NIF_TERM flags =
+        enif_make_tuple1(env, dg->flags.ldpc ? ATOM_TRUE : ATOM_FALSE);
+    ERL_NIF_TERM oui = enif_make_int(env, dg->oui);
+    ERL_NIF_TERM did = enif_make_int(env, dg->did);
+    ERL_NIF_TERM seq = enif_make_int(env, dg->fragment);
+    ERL_NIF_TERM fp  = enif_make_int(env, dg->fp);
+    ERL_NIF_TERM payload;
+    void *       p = enif_make_new_binary(env, dg->pay_len, &payload);
+    memcpy(p, dg->pay, dg->pay_len);
+    return enif_make_tuple7(env, ATOM_FRAME_DATA, flags, oui, did, seq, fp, payload);
+}
 
 static ERL_NIF_TERM
 erl_lfc_dg_monolithic_serialize(ErlNifEnv *        env,
@@ -70,6 +153,44 @@ erl_lfc_dg_monolithic_serialize(ErlNifEnv *        env,
     enif_realloc_binary(&des_bin, csr.pos);
 
     return enif_make_binary(env, &des_bin);
+}
+
+static ERL_NIF_TERM
+erl_lfc_dg_deserialize(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]) {
+    ErlNifBinary bin;
+
+    if (!enif_inspect_binary(env, argv[0], &bin)) {
+        return enif_make_badarg(env);
+    }
+
+    struct cursor     csr = cursor_new(bin.data, bin.size);
+    struct lfc_dg_des dg;
+    if (lfc_dg__des(&dg, &csr) != lfc_res_ok) {
+        return enif_make_badarg(env);
+    }
+
+    switch (dg.type) {
+    case lfc_dg_type_monolithic:
+        return enif_make_tuple2(
+            env, ATOM_OK, erl_lfc_dg_monolithic_to_term(env, &dg.monolithic));
+        break;
+    case lfc_dg_type_frame_start:
+        return enif_make_tuple2(
+            env, ATOM_OK, erl_lfc_dg_frame_start_to_term(env, &dg.frame_start));
+        break;
+    case lfc_dg_type_frame_data:
+        return enif_make_tuple2(
+            env, ATOM_OK, erl_lfc_dg_frame_data_to_term(env, &dg.frame_data));
+        break;
+    case lfc_dg_type_ack:
+        return enif_make_tuple2(env,
+                                ATOM_OK,
+                                erl_lfc_dg_ack_to_term(env, &dg.ack));
+        break;
+    default:
+        break;
+    }
+    return enif_make_tuple1(env, ATOM_ERROR);
 }
 
 static ERL_NIF_TERM
@@ -121,13 +242,13 @@ erl_lfc_fingerprint_monolithic(ErlNifEnv *        env,
     return enif_make_badarg(env);
 }
 
-
 #define ATOM(Id, Value)                                                        \
     { Id = enif_make_atom(env, Value); }
 
 static ErlNifFunc nif_funcs[] = {
     {"fingerprint_monolithic", 6, erl_lfc_fingerprint_monolithic, 0},
-    {"serialize_monolithic", 5, erl_lfc_dg_monolithic_serialize, 0}};
+    {"serialize_monolithic", 5, erl_lfc_dg_monolithic_serialize, 0},
+    {"deserialize", 1, erl_lfc_dg_deserialize, 0}};
 
 static int
 load(ErlNifEnv * env, void ** priv_data, ERL_NIF_TERM load_info) {
@@ -136,6 +257,12 @@ load(ErlNifEnv * env, void ** priv_data, ERL_NIF_TERM load_info) {
 
     ATOM(ATOM_TRUE, "true");
     ATOM(ATOM_FALSE, "false");
+    ATOM(ATOM_OK, "ok");
+    ATOM(ATOM_ERROR, "error");
+    ATOM(ATOM_ACK, "ack");
+    ATOM(ATOM_FRAME_DATA, "frame_data");
+    ATOM(ATOM_FRAME_START, "frame_start");
+    ATOM(ATOM_MONOLITHIC, "monolithic");
 
     return 0;
 }
