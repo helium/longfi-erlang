@@ -6,6 +6,54 @@
 
 -on_load(init/0).
 
+-record(monolithic_flags, {downlink,
+                           should_ack,
+                           cts_rts,
+                           priority,
+                           ldpc}).
+
+-record(monolithic, {flags,
+                     oui,
+                     did,
+                     fp,
+                     seq,
+                     payload}).
+
+-record(ack_flags, {failure,
+                    session_expired,
+                    cts_rts,
+                    retransmit,
+                    ldpc}).
+
+-record(ack, {flags,
+              oui,
+              did,
+              fp,
+              seq,
+              payload}).
+
+-record(frame_start_flags, {downlink,
+                            should_ack,
+                            cts_rts,
+                            priority}).
+
+-record(frame_start, {flags,
+                      oui,
+                      did,
+                      fp,
+                      seq,
+                      fragments,
+                      payload}).
+
+-record(frame_data_flags, { ldpc }).
+
+-record(frame_data, {flags,
+                     oui,
+                     did,
+                     fp,
+                     fragment,
+                     payload}).
+
 -include_lib("helium_proto/src/pb/helium_longfi_pb.hrl").
 
 -define(APPNAME, longfi).
