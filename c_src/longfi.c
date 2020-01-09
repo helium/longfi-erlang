@@ -174,7 +174,7 @@ erl_lfc_dg_deserialize(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]) {
     struct cursor     csr = cursor_new(bin.data, bin.size);
     struct lfc_dg_des dg;
     if (lfc_dg__des(&dg, &csr) != lfc_res_ok) {
-        return enif_make_badarg(env);
+        return ATOM_ERROR;
     }
 
     switch (dg.type) {
@@ -198,7 +198,7 @@ erl_lfc_dg_deserialize(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]) {
     default:
         break;
     }
-    return enif_make_tuple1(env, ATOM_ERROR);
+    return ATOM_ERROR;
 }
 
 static ERL_NIF_TERM

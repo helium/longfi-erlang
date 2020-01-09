@@ -73,21 +73,22 @@ serialize(OUI, DID, Sequence, Fingerprint, Payload) ->
 serialize_monolithic(_OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
     not_loaded(?LINE).
 
-deserialize(Bin) ->
+-spec deserialize(binary()) -> error | {ok, #monolithic{} | #ack{} | #frame_start{} | #frame_data{}}.
+deserialize(_Bin) ->
     not_loaded(?LINE).
 
 init() ->
     SoName = case code:priv_dir(?APPNAME) of
-        {error, bad_name} ->
-            case filelib:is_dir(filename:join(["..", priv])) of
-                true ->
-                    filename:join(["..", priv, ?LIBNAME]);
-                _ ->
-                    filename:join([priv, ?LIBNAME])
-            end;
-        Dir ->
-            filename:join(Dir, ?LIBNAME)
-    end,
+                 {error, bad_name} ->
+                     case filelib:is_dir(filename:join(["..", priv])) of
+                         true ->
+                             filename:join(["..", priv, ?LIBNAME]);
+                         _ ->
+                             filename:join([priv, ?LIBNAME])
+                     end;
+                 Dir ->
+                     filename:join(Dir, ?LIBNAME)
+             end,
     erlang:load_nif(SoName, 0).
 
 not_loaded(Line) ->
