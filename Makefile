@@ -16,3 +16,7 @@ typecheck:
 
 doc:
 	$(REBAR) edoc
+
+# Delegate all other targets to rebar.
+%:
+	$(REBAR) $@
