@@ -55,6 +55,20 @@ term_to_bool(ErlNifEnv * env, ERL_NIF_TERM term, bool * bp) {
     }
 }
 
+#define GET_UINT(env__, term__, dst__)                                         \
+    do {                                                                       \
+        if (!enif_get_uint(env__, term__, dst__)) {                            \
+            return enif_make_badarg(env);                                      \
+        }                                                                      \
+    } while (0);
+
+#define GET_BOOL(env__, term__, dst__)                                         \
+    do {                                                                       \
+        if (!term_to_bool(env__, term__, dst__)) {                             \
+            return enif_make_badarg(env);                                      \
+        }                                                                      \
+    } while (0);
+
 static ERL_NIF_TERM
 erl_lfc_dg_monolithic_to_term(ErlNifEnv *                      env,
                               struct lfc_dg_monolithic const * dg) {
