@@ -149,24 +149,18 @@ erl_lfc_dg_monolithic_serialize(ErlNifEnv *        env,
                                 const ERL_NIF_TERM argv[]) {
     struct lfc_dg_monolithic dg = {{0}};
 
-    if (!enif_get_uint(env, argv[0], &dg.oui)) {
-        return enif_make_badarg(env);
-    }
-
-    if (!enif_get_uint(env, argv[1], &dg.did)) {
-        return enif_make_badarg(env);
-    }
-
-    if (!enif_get_uint(env, argv[2], &dg.seq)) {
-        return enif_make_badarg(env);
-    }
-
-    if (!enif_get_uint(env, argv[3], &dg.fp)) {
-        return enif_make_badarg(env);
-    }
+    GET_BOOL(env, argv[0], &dg.flags.downlink);
+    GET_BOOL(env, argv[1], &dg.flags.should_ack);
+    GET_BOOL(env, argv[2], &dg.flags.cts_rts);
+    GET_BOOL(env, argv[3], &dg.flags.priority);
+    GET_BOOL(env, argv[4], &dg.flags.ldpc);
+    GET_UINT(env, argv[5], &dg.oui);
+    GET_UINT(env, argv[6], &dg.did);
+    GET_UINT(env, argv[7], &dg.seq);
+    GET_UINT(env, argv[8], &dg.fp);
 
     ErlNifBinary payload;
-    if (!enif_inspect_binary(env, argv[4], &payload)) {
+    if (!enif_inspect_binary(env, argv[9], &payload)) {
         return enif_make_badarg(env);
     }
     if (payload.size > LFC_DG_CONSTANTS_MAX_PAY_LEN) {
@@ -282,7 +276,7 @@ erl_lfc_fingerprint_monolithic(ErlNifEnv *        env,
 
 static ErlNifFunc nif_funcs[] = {
     {"fingerprint_monolithic", 6, erl_lfc_fingerprint_monolithic, 0},
-    {"serialize_monolithic", 5, erl_lfc_dg_monolithic_serialize, 0},
+    {"serialize_monolithic", 10, erl_lfc_dg_monolithic_serialize, 0},
     {"deserialize", 1, erl_lfc_dg_deserialize, 0}};
 
 static int

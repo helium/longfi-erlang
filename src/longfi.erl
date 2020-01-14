@@ -2,7 +2,7 @@
 
 -export([deserialize/1,
          get_fingerprint/2,
-         serialize/5]).
+         serialize/1]).
 
 -on_load(init/0).
 
@@ -72,12 +72,12 @@ fingerprint_monolithic(_Key, _Header, _OUI, _DID, _Sequence, _Payload) ->
     not_loaded(?LINE).
 
 
--spec serialize(non_neg_integer(), non_neg_integer(), non_neg_integer(), non_neg_integer(), binary()) ->binary().
-serialize(OUI, DID, Sequence, Fingerprint, Payload) ->
-    serialize_monolithic(OUI, DID, Sequence, Fingerprint, Payload).
+-spec serialize(#monolithic{}) -> binary().
+serialize(#monolithic{flags = #monolithic_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
+    serialize_monolithic(Downlink, ShouldAck, CtsRts, Priority, LDPC, OUI, DID, Sequence, Fingerprint, Payload).
 
 
-serialize_monolithic(_OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
+serialize_monolithic(_Downlink, _ShouldAck, _CtsRts, _Priority, _LDPC, _OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
     not_loaded(?LINE).
 
 
