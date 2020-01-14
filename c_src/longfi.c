@@ -42,6 +42,19 @@ bool_to_term(bool val) {
     return val ? ATOM_TRUE : ATOM_FALSE;
 }
 
+static int
+term_to_bool(ErlNifEnv * env, ERL_NIF_TERM term, bool * bp) {
+    if (enif_is_identical(term, ATOM_TRUE)) {
+        *bp = true;
+        return 1;
+    } else if (enif_is_identical(term, ATOM_FALSE)) {
+        *bp = false;
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 static ERL_NIF_TERM
 erl_lfc_dg_monolithic_to_term(ErlNifEnv *                      env,
                               struct lfc_dg_monolithic const * dg) {
