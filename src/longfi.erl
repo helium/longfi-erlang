@@ -72,12 +72,30 @@ fingerprint_monolithic(_Key, _Header, _OUI, _DID, _Sequence, _Payload) ->
     not_loaded(?LINE).
 
 
--spec serialize(#monolithic{}) -> binary().
+-spec serialize(#monolithic{} | #ack{} | #frame_start{} | #frame_data{}) -> binary().
 serialize(#monolithic{flags = #monolithic_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
-    serialize_monolithic(Downlink, ShouldAck, CtsRts, Priority, LDPC, OUI, DID, Sequence, Fingerprint, Payload).
+    serialize_monolithic(Downlink, ShouldAck, CtsRts, Priority, LDPC, OUI, DID, Sequence, Fingerprint, Payload);
+serialize(#ack{flags = #ack_flags{failure = Failure, session_expired = SessionExpired, cts_rts = CtsRts, retransmit = Retransmit, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
+    serialize_ack(Failure, SessionExpired, CtsRts, Retransmit, LDPC, OUI, DID, Sequence, Fingerprint, Payload);
+serialize(#frame_start{flags = #frame_start_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority}, oui=OUI, did=DID, seq=Sequence, fragments=Fragments, fp=Fingerprint, payload=Payload}) ->
+    serialize_frame_start(Downlink, ShouldAck, CtsRts, Priority, OUI, DID, Sequence, Fragments, Fingerprint, Payload);
+serialize(#frame_data{flags = #frame_data_flags{ldpc = LDPC}, oui=OUI, did=DID, fragment=Fragment, fp=Fingerprint, payload=Payload}) ->
+    serialize_frame_data(LDPC, OUI, DID, Fragment, Fingerprint, Payload).
 
 
 serialize_monolithic(_Downlink, _ShouldAck, _CtsRts, _Priority, _LDPC, _OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
+    not_loaded(?LINE).
+
+
+serialize_ack(_Failure, _SessionExpired, _CtsRts, _Retransmit, _LDPC, _OUI, _DID, _Sequence, _Fingerprint, _Payload) ->
+    not_loaded(?LINE).
+
+
+serialize_frame_start(_Downlink, _ShouldAck, _CtsRts, _Priority, _OUI, _DID, _Sequence, _Fragments, _Fingerprint, _Payload) ->
+    not_loaded(?LINE).
+
+
+serialize_frame_data(_LDPC, _OUI, _DID, _Fragment, _Fingerprint, _Payload) ->
     not_loaded(?LINE).
 
 
