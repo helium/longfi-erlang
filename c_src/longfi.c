@@ -149,15 +149,19 @@ erl_lfc_dg_monolithic_serialize(ErlNifEnv *        env,
                                 const ERL_NIF_TERM argv[]) {
     struct lfc_dg_monolithic dg = {{0}};
 
-    GET_BOOL(env, argv[0], &dg.flags.downlink);
-    GET_BOOL(env, argv[1], &dg.flags.should_ack);
-    GET_BOOL(env, argv[2], &dg.flags.cts_rts);
-    GET_BOOL(env, argv[3], &dg.flags.priority);
-    GET_BOOL(env, argv[4], &dg.flags.ldpc);
-    GET_UINT(env, argv[5], &dg.oui);
-    GET_UINT(env, argv[6], &dg.did);
-    GET_UINT(env, argv[7], &dg.seq);
-    GET_UINT(env, argv[8], &dg.fp);
+    ErlNifBinary key;
+    if (!enif_inspect_binary(env, argv[0], &key)) {
+        return enif_make_badarg(env);
+    }
+
+    GET_BOOL(env, argv[1], &dg.flags.downlink);
+    GET_BOOL(env, argv[2], &dg.flags.should_ack);
+    GET_BOOL(env, argv[3], &dg.flags.cts_rts);
+    GET_BOOL(env, argv[4], &dg.flags.priority);
+    GET_BOOL(env, argv[5], &dg.flags.ldpc);
+    GET_UINT(env, argv[6], &dg.oui);
+    GET_UINT(env, argv[7], &dg.did);
+    GET_UINT(env, argv[8], &dg.seq);
 
     ErlNifBinary payload;
     if (!enif_inspect_binary(env, argv[9], &payload)) {
@@ -168,6 +172,24 @@ erl_lfc_dg_monolithic_serialize(ErlNifEnv *        env,
     }
     memcpy(dg.pay, payload.data, payload.size);
     dg.pay_len = payload.size;
+
+    /* Create temporary header bits for sake of fingerprinting. */
+    uint16_t hdr = lfc_dg_type_monolithic << 6 | dg.flags.ldpc << 4
+                   | dg.flags.priority << 3 | dg.flags.cts_rts << 2
+                   | dg.flags.should_ack << 1 | dg.flags.downlink << 0;
+
+    if (lfc_res_ok
+        != lfc_fingerprint_monolithic(key.data,
+                                      key.size,
+                                      hdr,
+                                      dg.oui,
+                                      dg.did,
+                                      dg.seq,
+                                      dg.pay,
+                                      dg.pay_len,
+                                      &dg.fp)) {
+        return enif_make_badarg(env);
+    }
 
     // TODO: how to (need to) handle allocation failure in NIFs?
     ErlNifBinary des_bin;
