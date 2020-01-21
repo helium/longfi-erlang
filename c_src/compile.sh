@@ -17,6 +17,9 @@ if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
     git checkout $VERSION
 fi
 
+export CFLAGS=-fPIC
+export LDFLAGS=-fPIC
+
 cmake -H. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install
 cmake --build . -j
 cmake --install .
