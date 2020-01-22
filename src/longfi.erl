@@ -20,7 +20,7 @@
 
 -on_load(init/0).
 
--include_lib("helium_proto/src/pb/helium_longfi_pb.hrl").
+-include_lib("helium_proto/src/pb/longfi_pb.hrl").
 
 
 -record(monolithic_flags, {downlink = false :: boolean(),
@@ -83,8 +83,8 @@ new(Type, OUI, DID, Seq, Payload, Flags) ->
              end,
     oui(OUI, device_id(DID, sequence_number(Seq, payload(Payload, flags(Flags, Packet))))).
 
--spec get_fingerprint(#helium_LongFiRxPacket_pb{}, binary()) -> non_neg_integer().
-get_fingerprint(#helium_LongFiRxPacket_pb{tag_bits=Header, oui=OUI, device_id=DID, sequence=Sequence, payload=Payload}, Key) ->
+-spec get_fingerprint(#'LongFiRxPacket_pb'{}, binary()) -> non_neg_integer().
+get_fingerprint(#'LongFiRxPacket_pb'{tag_bits=Header, oui=OUI, device_id=DID, sequence=Sequence, payload=Payload}, Key) ->
     fingerprint_monolithic(Key, Header, OUI, DID, Sequence, Payload).
 
 
