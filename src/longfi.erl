@@ -3,7 +3,7 @@
 -export([new/6,
          deserialize/1,
          get_fingerprint/2,
-         serialize/1,
+         serialize/2,
          type/1,
          oui/1,
          oui/2,
@@ -12,7 +12,6 @@
          sequence_number/1,
          sequence_number/2,
          fingerprint/1,
-         fingerprint/2,
          payload/1,
          payload/2,
          flags/1,
@@ -93,14 +92,14 @@ fingerprint_monolithic(_Key, _Header, _OUI, _DID, _Sequence, _Payload) ->
     not_loaded(?LINE).
 
 
--spec serialize(packet()) -> binary().
-serialize(#monolithic{flags = #monolithic_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
-    serialize_monolithic(Downlink, ShouldAck, CtsRts, Priority, LDPC, OUI, DID, Sequence, Fingerprint, Payload);
-serialize(#ack{flags = #ack_flags{failure = Failure, session_expired = SessionExpired, cts_rts = CtsRts, retransmit = Retransmit, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
+-spec serialize(binary(), packet()) -> binary().
+serialize(Key, #monolithic{flags = #monolithic_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, payload=Payload}) ->
+    serialize_monolithic(Key, Downlink, ShouldAck, CtsRts, Priority, LDPC, OUI, DID, Sequence, Payload);
+serialize(_, #ack{flags = #ack_flags{failure = Failure, session_expired = SessionExpired, cts_rts = CtsRts, retransmit = Retransmit, ldpc = LDPC}, oui=OUI, did=DID, seq=Sequence, fp=Fingerprint, payload=Payload}) ->
     serialize_ack(Failure, SessionExpired, CtsRts, Retransmit, LDPC, OUI, DID, Sequence, Fingerprint, Payload);
-serialize(#frame_start{flags = #frame_start_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority}, oui=OUI, did=DID, seq=Sequence, fragments=Fragments, fp=Fingerprint, payload=Payload}) ->
+serialize(_, #frame_start{flags = #frame_start_flags{downlink = Downlink, should_ack = ShouldAck, cts_rts = CtsRts, priority = Priority}, oui=OUI, did=DID, seq=Sequence, fragments=Fragments, fp=Fingerprint, payload=Payload}) ->
     serialize_frame_start(Downlink, ShouldAck, CtsRts, Priority, OUI, DID, Sequence, Fragments, Fingerprint, Payload);
-serialize(#frame_data{flags = #frame_data_flags{ldpc = LDPC}, oui=OUI, did=DID, fragment=Fragment, fp=Fingerprint, payload=Payload}) ->
+serialize(_, #frame_data{flags = #frame_data_flags{ldpc = LDPC}, oui=OUI, did=DID, fragment=Fragment, fp=Fingerprint, payload=Payload}) ->
     serialize_frame_data(LDPC, OUI, DID, Fragment, Fingerprint, Payload).
 
 
@@ -170,11 +169,6 @@ fingerprint(#monolithic{fp=Fp}) -> Fp;
 fingerprint(#ack{fp=Fp}) -> Fp;
 fingerprint(#frame_start{fp=Fp}) -> Fp;
 fingerprint(#frame_data{fp=Fp}) -> Fp.
-
--spec fingerprint(Key :: binary(), Packet :: packet()) -> packet().
-fingerprint(_Key, Packet=#monolithic{}) ->
-    %fingerprint_mon
-    Packet.
 
 -spec payload(Packet :: packet()) -> binary().
 payload(#monolithic{payload=Payload}) -> Payload;
