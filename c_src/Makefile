@@ -34,7 +34,7 @@ else ifeq ($(UNAME_SYS), Linux)
 	CXXFLAGS ?= -O3 -finline-functions -Wall
 endif
 
-CFLAGS += -fPIC -I $(ERTS_INCLUDE_DIR) -I $(ERL_INTERFACE_INCLUDE_DIR) -I longfi-core/include -I longfi-core/_deps/cursor-src/include
+CFLAGS += -fPIC -I $(ERTS_INCLUDE_DIR) -I $(ERL_INTERFACE_INCLUDE_DIR) -I longfi-core/include -I longfi-core/build/_deps/cursor-src/include
 CXXFLAGS += -fPIC -I $(ERTS_INCLUDE_DIR) -I $(ERL_INTERFACE_INCLUDE_DIR)
 
 LDLIBS += -L $(ERL_INTERFACE_LIB_DIR) -lerl_interface -lei -L longfi-core/build/src -L longfi-core/build/_deps/cursor-build/src -L longfi-core/build/extra/cursor_varint -L longfi-core/build/extra/blake2 -L longfi-core/build/extra/golay -llfc -lgolay -lblake2 -lcursor -lcursor_varint
