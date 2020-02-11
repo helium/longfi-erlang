@@ -1,4 +1,4 @@
 [{<<"helium_proto">>,
   {git,"https://github.com/helium/proto.git",
-       {ref,"1c293c84614a64fef0687434b4291ecd38a16f9d"}},
+       {ref,"940d082796a1b1680162f4ad192b09199ea579a9"}},
   0}].

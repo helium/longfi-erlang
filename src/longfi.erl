@@ -20,7 +20,7 @@
 
 -on_load(init/0).
 
--include_lib("helium_proto/src/pb/longfi_pb.hrl").
+-include_lib("helium_proto/include/longfi_pb.hrl").
 
 
 -record(monolithic_flags, {downlink = false :: boolean(),
