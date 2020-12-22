@@ -18,7 +18,7 @@ if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
 fi
 
 export CFLAGS="$CFLAGS -fPIC"
-export LDFLAGS="$CFLAGS -fPIC"
+export LDFLAGS="$LDFLAGS -fPIC"
 
 if [ ! -d build ]; then
     cmake -H. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE
