@@ -19,9 +19,6 @@ if [ ! "$VERSION" = "$CURRENT_VERSION" ]; then
     git checkout $VERSION
 fi
 
-export CFLAGS=-fPIC
-export LDFLAGS=-fPIC
-
 if [ ! -d build ]; then
     cmake -H. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
 fi
